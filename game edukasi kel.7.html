@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pahlawan Cilik Kebersihan Depok - Game Edukasi PAUD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Quicksand for fun typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'depok-yellow': '#FACC15',
+                        'depok-green': '#22C55E',
+                        'depok-blue': '#0EA5E9',
+                        'organic-green': '#16A34A',
+                        'anorganic-yellow': '#EAB308',
+                    },
+                    fontFamily: {
+                        'fredoka': ['Fredoka', 'sans-serif'],
+                        'quicksand': ['Quicksand', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', 'Quicksand', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow-x: hidden;
+            background: linear-gradient(180deg, #BAE6FD 0%, #F0FDF4 100%);
+        }
+
+        .bounce-gentle {
+            animation: bounceGentle 2s infinite ease-in-out;
+        }
+
+        @keyframes bounceGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pulse-slow {
+            animation: pulseSlow 1.8s infinite;
+        }
+
+        @keyframes pulseSlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-game {
+            transition: all 0.15s ease;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+        }
+        .btn-game:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* Touch friendly enhancements for IFP */
+        .touch-card {
+            min-height: 120px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-4 text-slate-800">
+
+    <!-- TOP HEADER / NAV BAR -->
+    <header class="w-full bg-white/90 backdrop-blur rounded-2xl p-3 md:p-4 card-shadow flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 md:w-16 md:h-16 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-inner">
+                <span class="text-2xl md:text-3xl">⭐</span>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-3xl font-bold text-emerald-600 tracking-wide">Pahlawan Cilik Depok</h1>
+                <p class="text-xs md:text-base text-slate-500 font-semibold">Tema: Aku Menjaga Kebersihan Lingkungan</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- Audio Replay Instruction Button -->
+            <button id="btnSoundRepeat" onclick="repeatInstruction()" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white px-3 md:px-5 py-2 md:py-3 rounded-2xl flex items-center gap-2 font-bold text-sm md:text-lg border-2 border-emerald-400">
+                <i class="fa-solid fa-volume-high text-xl md:text-2xl animate-pulse"></i>
+                <span class="hidden md:inline">Dengar Suara</span>
+            </button>
+
+            <!-- Stars/Score Tracker -->
+            <div class="bg-amber-100 border-2 border-amber-300 px-3 md:px-5 py-2 rounded-2xl flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-500 text-xl md:text-3xl"></i>
+                <span id="scoreDisplay" class="text-xl md:text-3xl font-bold text-amber-700">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME AREA CONTAINER -->
+    <main class="flex-1 my-3 md:my-5 flex flex-col items-center justify-center relative w-full max-w-6xl mx-auto">
+
+        <!-- SCREEN 1: WELCOME & REGISTRATION -->
+        <section id="screenWelcome" class="w-full bg-white/95 rounded-3xl p-4 md:p-8 card-shadow text-center max-w-3xl border-4 border-emerald-300">
+            <!-- Mascot Image/SVG -->
+            <div class="relative w-32 h-32 md:w-44 md:h-44 mx-auto mb-4 bounce-gentle">
+                <div class="w-full h-full bg-yellow-300 rounded-full border-4 border-yellow-500 flex items-center justify-center shadow-lg relative overflow-hidden">
+                    <!-- Dipo Belimbing Character SVG -->
+                    <svg viewBox="0 0 100 100" class="w-full h-full p-2">
+                        <!-- Starfruit Body -->
+                        <path d="M50 10 C30 10 20 30 20 50 C20 75 35 90 50 90 C65 90 80 75 80 50 C80 30 70 10 50 10 Z" fill="#FACC15" stroke="#CA8A04" stroke-width="3"/>
+                        <path d="M50 10 C42 30 42 70 50 90" fill="none" stroke="#EAB308" stroke-width="3"/>
+                        <!-- Leaves -->
+                        <path d="M40 12 C35 2 50 0 50 10" fill="#22C55E"/>
+                        <path d="M60 12 C65 2 50 0 50 10" fill="#16A34A"/>
+                        <!-- Eyes -->
+                        <circle cx="40" cy="42" r="6" fill="#1E293B"/>
+                        <circle cx="60" cy="42" r="6" fill="#1E293B"/>
+                        <circle cx="42" cy="40" r="2" fill="white"/>
+                        <circle cx="62" cy="40" r="2" fill="white"/>
+                        <!-- Cheeks -->
+                        <circle cx="33" cy="48" r="4" fill="#F43F5E" opacity="0.6"/>
+                        <circle cx="67" cy="48" r="4" fill="#F43F5E" opacity="0.6"/>
+                        <!-- Smile -->
+                        <path d="M 40 55 Q 50 65 60 55" fill="none" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="absolute -bottom-2 right-2 bg-emerald-500 text-white font-bold text-xs md:text-sm px-3 py-1 rounded-full border border-white shadow">
+                    Dipo Belimbing
+                </span>
+            </div>
+
+            <h2 class="text-2xl md:text-4xl font-extrabold text-emerald-700 mb-2">Halo Teman-Teman Depok!</h2>
+            <p class="text-slate-600 text-base md:text-xl font-medium mb-6">
+                Yuk, kita jadi <span class="text-emerald-600 font-bold">Pahlawan Cilik Kebersihan</span> agar kota Depok selalu bersih dan sehat!
+            </p>
+
+            <!-- Group Setup for IFP (Up to 10 Children) -->
+            <div class="bg-emerald-50 p-4 md:p-6 rounded-2xl border-2 border-emerald-200 mb-6 text-left">
+                <label class="block text-emerald-800 font-bold text-base md:text-lg mb-2">
+                    <i class="fa-solid fa-users text-emerald-600 mr-2"></i>Nama Kelompok / Kelas PAUD:
+                </label>
+                <input type="text" id="groupName" value="Kelompok TK-A Belimbing Cerdas" class="w-full text-lg md:text-xl p-3 border-2 border-emerald-300 rounded-xl focus:outline-none focus:border-emerald-500 font-bold text-slate-700">
+
+                <div class="mt-4">
+                    <span class="text-slate-600 font-semibold text-sm md:text-base">Jumlah Anggota Kelompok Dimainkan:</span>
+                    <div class="flex items-center gap-3 mt-2">
+                        <i class="fa-solid fa-child text-2xl text-emerald-600"></i>
+                        <input type="range" id="playerCount" min="1" max="10" value="5" class="w-full h-3 bg-emerald-200 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('playerCountVal').innerText = this.value">
+                        <span id="playerCountVal" class="font-extrabold text-2xl text-emerald-700 w-8">5</span>
+                        <span class="text-slate-500 font-bold">Anak</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-game w-full bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-extrabold text-xl md:text-3xl py-4 rounded-2xl border-4 border-yellow-500 flex items-center justify-center gap-3 pulse-slow">
+                <i class="fa-solid fa-play text-2xl md:text-3xl"></i>
+                MULAI BERMAIN!
+            </button>
+        </section>
+
+        <!-- GAME LEVEL CONTAINER (DYNAMICTALLY LOADED) -->
+        <section id="screenGame" class="w-full hidden flex-col items-center">
+
+            <!-- LEVEL PROGRESS HEADER -->
+            <div class="w-full bg-white/90 rounded-2xl p-3 mb-4 card-shadow flex justify-between items-center border-2 border-emerald-300">
+                <div class="flex items-center gap-2">
+                    <span id="levelBadge" class="bg-emerald-600 text-white font-extrabold text-base md:text-xl px-4 py-1.5 rounded-xl">
+                        LEVEL 1
+                    </span>
+                    <h3 id="levelTitle" class="text-base md:text-2xl font-bold text-slate-700">Memilah Sampah</h3>
+                </div>
+                <!-- Turn Indicator for IFP Group Playing -->
+                <div class="bg-blue-100 text-blue-800 border border-blue-300 px-3 py-1 rounded-xl font-bold text-xs md:text-base flex items-center gap-1.5">
+                    <i class="fa-solid fa-hand-pointer text-blue-600 animate-bounce"></i>
+                    <span>Giliran Anak Ke: <strong id="currentTurnNumber" class="text-blue-900 text-lg">1</strong></span>
+                </div>
+            </div>
+
+            <!-- INSTRUCTION BANNER -->
+            <div id="instructionBanner" class="w-full bg-emerald-500 text-white p-3 md:p-4 rounded-2xl mb-4 text-center text-lg md:text-2xl font-bold shadow-md border-2 border-emerald-400 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-circle-info text-2xl md:text-3xl"></i>
+                <span id="instructionText">Instruksi Level...</span>
+            </div>
+
+            <!-- LEVEL 1 CONTENT: MEMILAH SAMPAH (ORGANIK & ANORGANIK) -->
+            <div id="level1Area" class="w-full flex-col items-center gap-6 hidden">
+                <!-- Trash Item Target to Sort -->
+                <div class="bg-white p-6 rounded-3xl card-shadow border-4 border-dashed border-amber-300 flex flex-col items-center justify-center min-w-[220px] min-h-[180px] bg-amber-50/50">
+                    <span class="text-xs md:text-sm font-bold text-amber-700 mb-1">Sentuh Tempat Sampah yang Tepat!</span>
+                    <div id="trashCurrentItem" class="text-7xl md:text-8xl my-2 animate-bounce cursor-pointer">
+                        🍎
+                    </div>
+                    <span id="trashCurrentName" class="text-xl md:text-2xl font-extrabold text-slate-700">Sisa Apel</span>
+                </div>
+
+                <!-- Bins Options -->
+                <div class="grid grid-cols-2 gap-4 md:gap-8 w-full max-w-3xl">
+                    <!-- Organik Bin -->
+                    <button onclick="checkLevel1Answer('organik')" class="btn-game touch-card bg-emerald-500 hover:bg-emerald-600 text-white p-4 md:p-6 rounded-3xl border-4 border-emerald-600 flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-leaf text-4xl md:text-6xl text-emerald-200"></i>
+                        <span class="text-2xl md:text-4xl font-extrabold tracking-wide">ORGANIK</span>
+                        <span class="text-xs md:text-base font-semibold bg-emerald-700/50 px-3 py-1 rounded-full">(Sisa Makanan / Daun)</span>
+                    </button>
+
+                    <!-- Anorganik Bin -->
+                    <button onclick="checkLevel1Answer('anorganik')" class="btn-game touch-card bg-amber-500 hover:bg-amber-600 text-white p-4 md:p-6 rounded-3xl border-4 border-amber-600 flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-bottle-water text-4xl md:text-6xl text-amber-200"></i>
+                        <span class="text-2xl md:text-4xl font-extrabold tracking-wide">ANORGANIK</span>
+                        <span class="text-xs md:text-base font-semibold bg-amber-700/50 px-3 py-1 rounded-full">(Plastik / Kaleng)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- LEVEL 2 CONTENT: URUTAN CUCI TANGAN / KEBERSIHAN -->
+            <div id="level2Area" class="w-full flex-col items-center gap-4 hidden">
+                <p class="text-slate-600 font-bold text-sm md:text-lg bg-white/80 px-4 py-1.5 rounded-full">
+                    Urutkan langkah cuci tangan dari nomor <span class="text-emerald-600">1 sampai 4</span> dengan menekan kartunya!
+                </p>
+
+                <!-- Sequence Slots -->
+                <div id="sequenceSlots" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 w-full">
+                    <!-- Dynamically generated sequence cards -->
+                </div>
+
+                <button onclick="resetLevel2Sequence()" class="mt-2 text-slate-500 hover:text-slate-700 font-bold text-sm underline flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i> Ulangi Urutan
+                </button>
+            </div>
+
+            <!-- LEVEL 3 CONTENT: PROBLEM SOLVING / ALAT KEBERSIHAN -->
+            <div id="level3Area" class="w-full flex-col items-center gap-6 hidden">
+                <!-- Situation Scenario Box -->
+                <div class="w-full bg-white p-4 md:p-6 rounded-3xl card-shadow border-4 border-sky-300 flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <div id="scenarioIcon" class="text-6xl md:text-8xl p-3 bg-sky-100 rounded-2xl">
+                        🍂
+                    </div>
+                    <div>
+                        <span class="bg-sky-500 text-white font-bold px-3 py-1 rounded-full text-xs md:text-sm">Masalah Kebersihan:</span>
+                        <h4 id="scenarioTitle" class="text-xl md:text-3xl font-extrabold text-slate-800 mt-1">
+                            Banyak daun kering berserakan di halaman sekolah!
+                        </h4>
+                        <p class="text-slate-600 text-sm md:text-lg font-medium mt-1">
+                            Alat kebersihan mana yang harus kita pakai untuk membersihkannya?
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tool Choice Buttons -->
+                <div id="toolsOptionGrid" class="grid grid-cols-3 gap-3 md:gap-6 w-full max-w-4xl">
+                    <!-- Generated via JS -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SCREEN 3: FEEDBACK POSITIF / CELEBRATION MODAL -->
+        <div id="modalFeedback" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full text-center card-shadow border-4 border-yellow-400 relative animate-bounce-short">
+                <div class="text-7xl md:text-8xl mb-3" id="feedbackEmoji">🎉</div>
+                <h3 id="feedbackTitle" class="text-2xl md:text-4xl font-extrabold text-emerald-600 mb-2">HEBAT SEHALI!</h3>
+                <p id="feedbackMessage" class="text-slate-600 text-lg md:text-xl font-bold mb-6">
+                    Kamu berhasil menyelesaikan tugas kebersihan ini dengan sangat baik!
+                </p>
+                <button onclick="closeFeedbackModal()" class="btn-game w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xl py-3.5 rounded-2xl border-2 border-emerald-400">
+                    LANJUTKAN <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: SERTIFIKAT PENGHARGAAN DIGITAL -->
+        <section id="screenCertificate" class="w-full hidden flex-col items-center">
+            <!-- Printable Certificate Box -->
+            <div id="certificateCard" class="w-full max-w-4xl bg-amber-50 p-6 md:p-10 rounded-3xl border-8 border-amber-400 card-shadow text-center relative overflow-hidden my-2">
+                <!-- Decorative Corner Ribbons -->
+                <div class="absolute top-0 left-0 w-24 h-24 bg-emerald-500 -rotate-45 -translate-x-12 -translate-y-12"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-400 rotate-45 translate-x-12 -translate-y-12"></div>
+
+                <div class="border-4 border-dashed border-amber-300 p-4 md:p-8 rounded-2xl bg-white/90">
+                    <div class="flex justify-center items-center gap-2 mb-2">
+                        <span class="text-3xl md:text-5xl">🏆</span>
+                        <h2 class="text-2xl md:text-5xl font-black text-amber-600 tracking-wider">SERTIFIKAT PENGHARGAAN</h2>
+                        <span class="text-3xl md:text-5xl">🏆</span>
+                    </div>
+                    <p class="text-slate-500 text-sm md:text-xl font-bold uppercase tracking-widest mb-4">Pahlawan Cilik Kebersihan Lingkungan Depok</p>
+
+                    <p class="text-slate-600 text-base md:text-xl">Diberikan dengan bangga kepada:</p>
+                    <h3 id="certGroupName" class="text-2xl md:text-4xl font-black text-emerald-700 my-2 underline decoration-yellow-400 decoration-4">
+                        Kelompok TK-A Belimbing Cerdas
+                    </h3>
+
+                    <p class="text-slate-600 text-sm md:text-lg max-w-2xl mx-auto my-4 font-medium">
+                        Telah berhasil menyelesaikan seluruh tantangan menjaga kebersihan lingkungan, memilah sampah, dan mempraktikkan kebiasaan hidup sehat di Kota Depok, Jawa Barat.
+                    </p>
+
+                    <div class="flex justify-around items-center mt-8 pt-4 border-t-2 border-amber-200">
+                        <div>
+                            <div class="text-amber-500 text-3xl font-bold flex justify-center gap-1" id="certStars">
+                                ⭐⭐⭐⭐⭐
+                            </div>
+                            <span class="text-xs md:text-sm font-bold text-slate-500">Nilai Kebersihan Sempurna</span>
+                        </div>
+
+                        <!-- Badge Stamp -->
+                        <div class="w-20 h-20 md:w-24 md:h-24 bg-yellow-400 rounded-full border-4 border-yellow-500 flex flex-col items-center justify-center rotate-12 shadow-md">
+                            <span class="text-xs font-black text-yellow-950">DEPOK</span>
+                            <i class="fa-solid fa-shield-heart text-2xl text-emerald-700"></i>
+                            <span class="text-[10px] font-bold text-yellow-900">SEHAT</span>
+                        </div>
+
+                        <div>
+                            <p class="text-xs md:text-sm font-bold text-slate-700" id="certDate">Tanggal: 24 Oktober 2026</p>
+                            <p class="text-xs md:text-sm font-bold text-emerald-700">Kota Depok Sehat & Bersih</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 justify-center mt-4 w-full max-w-2xl">
+                <button onclick="window.print()" class="btn-game bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-lg px-6 py-3 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Cetak Sertifikat
+                </button>
+                <button onclick="restartGame()" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-lg px-6 py-3 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Main Lagi
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER INFO -->
+    <footer class="w-full text-center py-2 text-xs md:text-sm font-bold text-slate-500">
+        Dikembangkan untuk Pendidikan Anak Usia Dini (PAUD 4-5 Tahun) • Dimensi Kesehatan & Akhlak Mulia
+    </footer>
+
+    <!-- GAME LOGIC SCRIPT -->
+    <script>
+        /* -------------------------------------------------------------------------- */
+        /* GAME STATE & VARIABLES                                                      */
+        /* -------------------------------------------------------------------------- */
+        let state = {
+            groupName: "Kelompok TK-A Belimbing Cerdas",
+            playerCount: 5,
+            currentTurn: 1,
+            score: 0,
+            currentLevel: 1,
+            // Level 1 items
+            level1Index: 0,
+            level1Items: [
+                { name: "Sisa Apel", icon: "🍎", type: "organik" },
+                { name: "Botol Plastik", icon: "🍾", type: "anorganik" },
+                { name: "Daun Kering", icon: "🍂", type: "organik" },
+                { name: "Kaleng Minuman", icon: "🥤", type: "anorganik" },
+                { name: "Kulit Pisang", icon: "🍌", type: "organik" }
+            ],
+            // Level 2 Handwash items
+            level2UserSequence: [],
+            level2CorrectOrder: [
+                { id: 1, text: "Basahi Tangan & Sabun", icon: "🧼" },
+                { id: 2, text: "Gosok Busa Sabun", icon: "🫧" },
+                { id: 3, text: "Bilas Air Bersih", icon: "🚰" },
+                { id: 4, text: "Keringkan Tangan", icon: "✨" }
+            ],
+            // Level 3 Scenarios
+            level3Index: 0,
+            level3Scenarios: [
+                {
+                    title: "Banyak daun kering berserakan di taman!",
+                    icon: "🍂",
+                    correctTool: "Sapu Lidi",
+                    tools: [
+                        { name: "Sapu Lidi", icon: "🧹", correct: true },
+                        { name: "Kain Lap", icon: "🧽", correct: false },
+                        { name: "Ember Air", icon: "🪣", correct: false }
+                    ]
+                },
+                {
+                    title: "Air tumpah di lantai kelas!",
+                    icon: "💧",
+                    correctTool: "Kain Pel",
+                    tools: [
+                        { name: "Kain Pel", icon: "🧹", correct: true },
+                        { name: "Kemoceng", icon: "🪶", correct: false },
+                        { name: "Sapu Lidi", icon: "🌾", correct: false }
+                    ]
+                },
+                {
+                    title: "Meja belajar berdebu tebal!",
+                    icon: "🪑",
+                    correctTool: "Kain Lap",
+                    tools: [
+                        { name: "Kain Lap", icon: "🧽", correct: true },
+                        { name: "Gunting", icon: "✂️", correct: false },
+                        { name: "Sapu Lidi", icon: "🌾", correct: false }
+                    ]
+                }
+            ]
+        };
+
+        let currentSpeechText = "";
+
+        /* -------------------------------------------------------------------------- */
+        /* AUDIO & SPEECH SYNTHESIS (WEB SPEECH API & AUDIO CONTEXT)                   */
+        /* -------------------------------------------------------------------------- */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                // Happy high notes
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                // Low buzz tone
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'win') {
+                // Fanfare sound
+                const notes = [400, 500, 600, 800];
+                notes.forEach((freq, i) => {
+                    const oscF = audioCtx.createOscillator();
+                    const gainF = audioCtx.createGain();
+                    oscF.connect(gainF);
+                    gainF.connect(audioCtx.destination);
+                    oscF.frequency.value = freq;
+                    gainF.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.12);
+                    gainF.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.12 + 0.2);
+                    oscF.start(audioCtx.currentTime + i * 0.12);
+                    oscF.stop(audioCtx.currentTime + i * 0.12 + 0.2);
+                });
+            }
+        }
+
+        function speak(text) {
+            currentSpeechText = text;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop ongoing speech
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9; // Slightly slower for kids
+                utterance.pitch = 1.2; // Slightly higher pitch for friendly tone
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function repeatInstruction() {
+            if (currentSpeechText) {
+                speak(currentSpeechText);
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* GAME FLOW CONTROL                                                          */
+        /* -------------------------------------------------------------------------- */
+        function startGame() {
+            const gName = document.getElementById('groupName').value.trim();
+            if (gName !== "") state.groupName = gName;
+            state.playerCount = parseInt(document.getElementById('playerCount').value);
+            state.score = 0;
+            state.currentTurn = 1;
+            state.currentLevel = 1;
+            state.level1Index = 0;
+
+            updateScoreDisplay();
+
+            document.getElementById('screenWelcome').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('hidden');
+            document.getElementById('screenGame').classList.add('flex');
+
+            loadLevel1();
+        }
+
+        function nextTurn() {
+            state.currentTurn++;
+            if (state.currentTurn > state.playerCount) {
+                state.currentTurn = 1;
+            }
+            document.getElementById('currentTurnNumber').innerText = state.currentTurn;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').innerText = state.score;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* LEVEL 1: MEMILAH SAMPAH                                                     */
+        /* -------------------------------------------------------------------------- */
+        function loadLevel1() {
+            document.getElementById('levelBadge').innerText = "LEVEL 1";
+            document.getElementById('levelTitle').innerText = "Memilah Sampah";
+            document.getElementById('level1Area').classList.remove('hidden');
+            document.getElementById('level1Area').classList.add('flex');
+            document.getElementById('level2Area').classList.add('hidden');
+            document.getElementById('level3Area').classList.add('hidden');
+
+            const item = state.level1Items[state.level1Index];
+            document.getElementById('trashCurrentItem').innerText = item.icon;
+            document.getElementById('trashCurrentName').innerText = item.name;
+
+            const instruction = `Anak ke ${state.currentTurn}, buanglah ${item.name} ke tempat sampah yang benar! Organik atau Anorganik?`;
+            document.getElementById('instructionText').innerText = instruction;
+            speak(instruction);
+        }
+
+        function checkLevel1Answer(chosenType) {
+            const currentItem = state.level1Items[state.level1Index];
+
+            if (chosenType === currentItem.type) {
+                playSound('correct');
+                state.score += 10;
+                updateScoreDisplay();
+
+                showFeedback(
+                    "HEBAT!",
+                    `Benar sekali! ${currentItem.name} dibuang ke tempat sampah ${currentItem.type.toUpperCase()}.`,
+                    "🌟",
+                    () => {
+                        state.level1Index++;
+                        nextTurn();
+                        if (state.level1Index < state.level1Items.length) {
+                            loadLevel1();
+                        } else {
+                            // Proceed to Level 2
+                            state.currentLevel = 2;
+                            loadLevel2();
+                        }
+                    }
+                );
+            } else {
+                playSound('wrong');
+                showFeedback(
+                    "TETAP SEMANGAT!",
+                    `${currentItem.name} seharusnya masuk ke tempat sampah ${currentItem.type.toUpperCase()}. Coba lagi ya!`,
+                    "💡",
+                    () => {
+                        speak(`Coba lagi, masukkan ${currentItem.name} ke tempat yang sesuai.`);
+                    }
+                );
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* LEVEL 2: URUTAN CUCI TANGAN                                                 */
+        /* -------------------------------------------------------------------------- */
+        function loadLevel2() {
+            document.getElementById('levelBadge').innerText = "LEVEL 2";
+            document.getElementById('levelTitle').innerText = "Urutan Cuci Tangan";
+            document.getElementById('level1Area').classList.add('hidden');
+            document.getElementById('level2Area').classList.remove('hidden');
+            document.getElementById('level2Area').classList.add('flex');
+            document.getElementById('level3Area').classList.add('hidden');
+
+            state.level2UserSequence = [];
+
+            const instruction = `Anak ke ${state.currentTurn}, urutkan cara mencuci tangan dengan benar dari awal sampai bersih!`;
+            document.getElementById('instructionText').innerText = instruction;
+            speak(instruction);
+
+            renderLevel2Slots();
+        }
+
+        function renderLevel2Slots() {
+            const container = document.getElementById('sequenceSlots');
+            container.innerHTML = '';
+
+            // Shuffle display cards for selection
+            let displayCards = [...state.level2CorrectOrder];
+            // Sort deterministically shuffled for puzzle feel
+            displayCards.sort((a, b) => (a.id * 3) % 5 - (b.id * 3) % 5);
+
+            displayCards.forEach((card) => {
+                const isSelected = state.level2UserSequence.some(item => item.id === card.id);
+                const selectedIndex = state.level2UserSequence.findIndex(item => item.id === card.id) + 1;
+
+                const cardEl = document.createElement('button');
+                cardEl.className = `btn-game touch-card p-4 rounded-3xl border-4 flex flex-col items-center justify-center relative ${
+                    isSelected ? 'bg-amber-100 border-amber-500 opacity-60' : 'bg-white border-emerald-400 hover:bg-emerald-50'
+                }`;
+
+                cardEl.onclick = () => selectLevel2Card(card);
+
+                cardEl.innerHTML = `
+                    ${isSelected ? `<span class="absolute top-2 right-2 bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-extrabold text-lg">${selectedIndex}</span>` : ''}
+                    <span class="text-5xl md:text-6xl mb-2">${card.icon}</span>
+                    <span class="text-sm md:text-base font-extrabold text-slate-700">${card.text}</span>
+                `;
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        function selectLevel2Card(card) {
+            // Check if already selected
+            if (state.level2UserSequence.some(item => item.id === card.id)) return;
+
+            state.level2UserSequence.push(card);
+            playSound('correct');
+            speak(card.text);
+            renderLevel2Slots();
+
+            // Check if user selected all 4
+            if (state.level2UserSequence.length === 4) {
+                // Validate Sequence
+                let isCorrect = true;
+                for (let i = 0; i < 4; i++) {
+                    if (state.level2UserSequence[i].id !== state.level2CorrectOrder[i].id) {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+
+                if (isCorrect) {
+                    state.score += 20;
+                    updateScoreDisplay();
+                    showFeedback(
+                        "LUAR BIASA!",
+                        "Urutan mencuci tanganmu sangat tepat! Tangan jadi bersih dan bebas kuman.",
+                        "🧼",
+                        () => {
+                            state.currentLevel = 3;
+                            state.level3Index = 0;
+                            nextTurn();
+                            loadLevel3();
+                        }
+                    );
+                } else {
+                    playSound('wrong');
+                    showFeedback(
+                        "HAMPIR BENAR!",
+                        "Urutannya masih belum pas. Yuk kita ulang lagi dari awal!",
+                        "🔄",
+                        () => {
+                            resetLevel2Sequence();
+                        }
+                    );
+                }
+            }
+        }
+
+        function resetLevel2Sequence() {
+            state.level2UserSequence = [];
+            renderLevel2Slots();
+            speak("Urutan diulang. Pilih dari langkah pertama ya!");
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* LEVEL 3: SOLUSI MASALAH / ALAT KEBERSIHAN                                  */
+        /* -------------------------------------------------------------------------- */
+        function loadLevel3() {
+            document.getElementById('levelBadge').innerText = "LEVEL 3";
+            document.getElementById('levelTitle').innerText = "Pahlawan Kebersihan";
+            document.getElementById('level1Area').classList.add('hidden');
+            document.getElementById('level2Area').classList.add('hidden');
+            document.getElementById('level3Area').classList.remove('hidden');
+            document.getElementById('level3Area').classList.add('flex');
+
+            const scenario = state.level3Scenarios[state.level3Index];
+            document.getElementById('scenarioIcon').innerText = scenario.icon;
+            document.getElementById('scenarioTitle').innerText = scenario.title;
+
+            const instruction = `Anak ke ${state.currentTurn}, ${scenario.title} Alat apa yang tepat untuk membersihkannya?`;
+            document.getElementById('instructionText').innerText = instruction;
+            speak(instruction);
+
+            const grid = document.getElementById('toolsOptionGrid');
+            grid.innerHTML = '';
+
+            scenario.tools.forEach(tool => {
+                const btn = document.createElement('button');
+                btn.className = "btn-game touch-card bg-white hover:bg-amber-50 p-4 md:p-6 rounded-3xl border-4 border-sky-400 flex flex-col items-center justify-center gap-2";
+                btn.onclick = () => checkLevel3Answer(tool);
+
+                btn.innerHTML = `
+                    <span class="text-5xl md:text-7xl">${tool.icon}</span>
+                    <span class="text-lg md:text-2xl font-extrabold text-slate-800">${tool.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkLevel3Answer(selectedTool) {
+            const scenario = state.level3Scenarios[state.level3Index];
+
+            if (selectedTool.correct) {
+                playSound('correct');
+                state.score += 20;
+                updateScoreDisplay();
+
+                showFeedback(
+                    "PINTAR SEHALI!",
+                    `Kamu memilih ${selectedTool.name}. Masalah kebersihan berhasil diselesaikan!`,
+                    "🧹",
+                    () => {
+                        state.level3Index++;
+                        nextTurn();
+                        if (state.level3Index < state.level3Scenarios.length) {
+                            loadLevel3();
+                        } else {
+                            // Complete Game!
+                            finishGame();
+                        }
+                    }
+                );
+            } else {
+                playSound('wrong');
+                showFeedback(
+                    "COBA LAGI!",
+                    `${selectedTool.name} kurang cocok untuk masalah ini. Pilih alat lain ya!`,
+                    "🤔",
+                    () => {
+                        speak(`Pilih alat kebersihan yang lebih cocok.`);
+                    }
+                );
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* FEEDBACK MODAL & CELEBRATION                                               */
+        /* -------------------------------------------------------------------------- */
+        let onFeedbackCloseCallback = null;
+
+        function showFeedback(title, message, emoji, onClose) {
+            document.getElementById('feedbackTitle').innerText = title;
+            document.getElementById('feedbackMessage').innerText = message;
+            document.getElementById('feedbackEmoji').innerText = emoji;
+
+            onFeedbackCloseCallback = onClose;
+
+            const modal = document.getElementById('modalFeedback');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            speak(`${title}. ${message}`);
+
+            // Confetti effect for positivity
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('modalFeedback').classList.add('hidden');
+            document.getElementById('modalFeedback').classList.remove('flex');
+
+            if (onFeedbackCloseCallback) {
+                onFeedbackCloseCallback();
+                onFeedbackCloseCallback = null;
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* GAME COMPLETION & CERTIFICATE                                              */
+        /* -------------------------------------------------------------------------- */
+        function finishGame() {
+            playSound('win');
+
+            // Trigger grand celebration confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.4 }
+                });
+            }
+
+            document.getElementById('screenGame').classList.add('hidden');
+            document.getElementById('screenCertificate').classList.remove('hidden');
+            document.getElementById('screenCertificate').classList.add('flex');
+
+            // Set Certificate Data
+            document.getElementById('certGroupName').innerText = state.groupName;
+
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'Long', year: 'numeric' });
+            document.getElementById('certDate').innerText = `Tanggal: ${dateStr}`;
+
+            const victorySpeech = `Selamat! ${state.groupName} telah berhasil menjadi Pahlawan Cilik Kebersihan Lingkungan Depok! Kalian luar biasa!`;
+            speak(victorySpeech);
+        }
+
+        function restartGame() {
+            document.getElementById('screenCertificate').classList.add('hidden');
+            document.getElementById('screenWelcome').classList.remove('hidden');
+            speak("Mari kita main lagi dan tingkatkan kebersihan lingkungan!");
+        }
+
+        // Auto speak welcome on load
+        window.onload = function() {
+            setTimeout(() => {
+                speak("Selamat datang di Game Pahlawan Cilik Kebersihan Depok. Masukkan nama kelompokmu lalu tekan tombol Mulai!");
+            }, 800);
+        };
+    </script>
+</body>
+</html>
